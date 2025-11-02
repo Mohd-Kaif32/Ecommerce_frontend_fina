@@ -32,8 +32,9 @@ export const createOrder = (order) => async (dispatch) => {
         "Content-Type": "application/json",
       },
     };
+    console.log("above data fetch");
     const { data } = await api.post("/api/v1/order/new", order, config);
-
+    console.log("below data fetch");
     dispatch({ type: CREATE_ORDER_SUCCESS, payload: data });
   } catch (error) {
     dispatch({

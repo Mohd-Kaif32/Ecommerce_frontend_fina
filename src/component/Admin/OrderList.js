@@ -22,6 +22,7 @@ const OrderList = ({ history }) => {
   const alert = useAlert();
 
   const { error, orders } = useSelector((state) => state.allOrders);
+  console.log(orders);
 
   const { error: deleteError, isDeleted } = useSelector((state) => state.order);
 
@@ -109,17 +110,34 @@ const OrderList = ({ history }) => {
   const rows = [];
 
 
-if (orders && orders.length > 0) {
-  orders &&
-    orders.forEach((item) => {
-      rows.push({
-        id: item._id,
-        // itemsQty: item.orderItems.length,
-        amount: item.totalPrice,
-        status: item.orderStatus,
-      });
+// if (orders && orders.length > 0) {
+//   orders &&
+//     orders.forEach((item) => {
+//       rows.push({
+//         id: item._id,
+//         // itemsQty: item.orderItems.length,
+//         amount: item.totalPrice,
+//         status: item.orderStatus,
+//       });
+//     });
+// }
+if (Array.isArray(orders)) {
+  orders.forEach((item) => {
+    rows.push({
+      id: item._id || "",                        // fallback if _id missing
+      // itemsQty: item.orderItems ? item.orderItems.length : 0, // safe check
+      itemsQty: item.OrderItems
+  ? item.OrderItems.reduce((acc, curr) => acc + (curr.quantity || 0), 0)
+  : 0,
+
+      amount: item.totalPrice || 0,             // fallback if totalPrice missing
+      status: item.orderStatus || "Processing", // fallback if status missing
     });
+  });
 }
+
+
+
   return (
     <Fragment>
       <MetaData title={`ALL ORDERS - Admin`} />

@@ -4,18 +4,27 @@ import {
   SAVE_SHIPPING_INFO
 } from "../constants/cartConstants";
 
+
+
+
+
 export const cartReducer = (
   state = { cartItems: [], shippingInfo: {} },
   action
 ) => {
+  
   switch (action.type) {
     case ADD_TO_CART:
       const item = action.payload;
 
+      console.log(state.cartItems);
+
+      
       const isItemExist = state.cartItems.find(
         (i) => i.product === item.product
       );
 
+    
       if (isItemExist) {
         return {
           ...state,
@@ -30,6 +39,9 @@ export const cartReducer = (
         };
       }
 
+      // if(userId){
+        // localStorage.setItem(`cartItems_${userId}`,JSON.stringify(updatedCart));
+      // }
       
       case REMOVE_CART_ITEM:
         return {

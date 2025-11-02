@@ -11,6 +11,8 @@ import { useAlert } from "react-alert";
 const OrderDetails = ({ match }) => {
   const { order, error, loading } = useSelector((state) => state.orderDetails);
 
+  console.log(order);
+
   const dispatch = useDispatch();
   const alert = useAlert();
 
@@ -97,8 +99,8 @@ const OrderDetails = ({ match }) => {
             <div className="orderDetailsCartItems">
               <Typography>Order Items:</Typography>
               <div className="orderDetailsCartItemsContainer">
-                {order.orderItems &&
-                  order.orderItems.map((item) => (
+                {order.OrderItems &&
+                  order.OrderItems.map((item) => (
                     <div key={item.product}>
                       <img src={item.image} alt="Product" />
                       <Link to={`/product/${item.product}`}>

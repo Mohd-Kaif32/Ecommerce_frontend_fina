@@ -1,155 +1,161 @@
-
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useEffect, useRef,useState } from "react";
+import CheckoutSteps from "../Cart/CheckoutSteps";
+import { useSelector, useDispatch } from "react-redux";
+import MetaData from "../layout/MetaData";
+import { Typography } from "@material-ui/core";
+import { useAlert } from "react-alert";
+import {
+  CardNumberElement,
+  CardCvcElement,
+  CardExpiryElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+import Loader from "../layout/Loader/Loader";
+import axios from "axios";
 import "./payment.css";
-import { useHistory } from "react-router-dom";
-import {useSelector} from "react-redux";
-const RAZORPAY_TEST_KEY = "rzp_test_FAKE123456789"; // fake key for demo only
+import CreditCardIcon from "@material-ui/icons/CreditCard";
+import EventIcon from "@material-ui/icons/Event";
+import VpnKeyIcon from "@material-ui/icons/VpnKey";
+import { createOrder, clearErrors } from "../../actions/orderAction";
 
+console.log("hii");
+const Payment = ({ history }) => {
+  // const orderInfo = JSON.parse(sessionStorage.getItem("orderInfo"));
+  const orderInfo = JSON.parse(sessionStorage.getItem("orderInfo")) || {};
+console.log("itsOrderInfo",orderInfo)
 
+  const dispatch = useDispatch();
+  const alert = useAlert();
+  const stripe = useStripe();
+  const elements = useElements();
+  const payBtn = useRef(null);
+  // const [isPaying,setIsPaying] = useState(false);
+  const { shippingInfo, cartItems } = useSelector((state) => state.cart);
+  const { user } = useSelector((state) => state.user);
+  const {loading, error } = useSelector((state) => state.newOrder);
 
+  const paymentData = {
 
+    amount: Math.round(orderInfo.totalPrice * 100),
+  };
+  console.log("Frontend sending to backend:", paymentData);
 
-const Payment = () => {
-  const {cartItems} = useSelector((state)=>state.cart);
+  const order = {
+    shippingInfo,
+    orderItems: cartItems,
+    itemsPrice: orderInfo.subtotal,
+    taxPrice: orderInfo.tax,
+    shippingPrice: orderInfo.shippingCharges,
+    totalPrice: orderInfo.totalPrice,
+  };
 
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    // setIsPaying(true);
+    payBtn.current.disabled = true;
 
-  
-const cartTotal = cartItems.reduce(
-  (acc,item) => acc + item.price * item.quantity,0
-);
+    try {
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+      const { data } = await axios.post(
+        "/api/v1/payment/process",
+        paymentData,
+        config
+      );
 
+      const client_secret = data.client_secret;
 
-  const history = useHistory();
-  const [loading, setLoading] = useState(false);
-  const [amount] = useState(cartTotal*100); // amount in paise = ₹499.00
-  const [currency] = useState("INR");
+      if (!stripe || !elements) return;
 
-  // load Razorpay script
-  const loadRazorpayScript = () =>
-    new Promise((resolve) => {
-      if (window.Razorpay) return resolve(true);
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
+      const result = await stripe.confirmCardPayment(client_secret, {
+        payment_method: {
+          card: elements.getElement(CardNumberElement),
+          billing_details: {
+            name: user.name,
+            email: user.email,
+            address: {
+              line1: shippingInfo.address,
+              city: shippingInfo.city,
+              state: shippingInfo.state,
+              postal_code: shippingInfo.pinCode,
+              country: shippingInfo.country,
+            },
+          },
+        },
+      });
+
+      if (result.error) {
+        payBtn.current.disabled = false;
+
+        alert.error(result.error.message);
+        // setIsPaying(false);
+      } else {
+        if (result.paymentIntent.status === "succeeded") {
+          order.paymentInfo = {
+            id: result.paymentIntent.id,
+            status: result.paymentIntent.status,
+          };
+
+        
+          dispatch(createOrder(order));
+
+          history.push("/success");
+        } else {
+          alert.error("There's some issue while processing payment ");
+        }
+      }
+    } catch (error) {
+      payBtn.current.disabled = false;
+      alert.error(error.response.data.message);
+    }
+  };
 
   useEffect(() => {
-    loadRazorpayScript();
-  }, []);
-
-  // mock order creation (normally comes from backend)
-  const createOrder = async () => {
-    return {
-      id: "order_demo_123456",
-      amount,
-      currency,
-    };
-  };
-
-  const handlePayment = async () => {
-    setLoading(true);
-    const loaded = await loadRazorpayScript();
-    if (!loaded) {
-      alert("Failed to load Razorpay SDK");
-      setLoading(false);
-      return;
+    if (error) {
+      alert.error(error);
+      dispatch(clearErrors());
     }
-
-    let order;
-    try {
-      order = await createOrder();
-    } catch (err) {
-      alert("Order creation failed");
-      setLoading(false);
-      return;
-    }
-
-    const options = {
-      key: RAZORPAY_TEST_KEY,
-      amount: order.amount,
-      currency: order.currency,
-      name: "MyShop Demo",
-      description: "Test Transaction",
-      image: "https://via.placeholder.com/120x40?text=MyShop",
-      order_id: order.id,
-      handler: function (response) {
-        console.log("Success:", response);
-        alert("Payment successful (demo)!");
-        history.push("/payment/success");
-      },
-      modal: {
-        ondismiss: function () {
-          setLoading(false);
-        },
-      },
-      prefill: {
-        name: "Demo User",
-        email: "demo@example.com",
-        contact: "9999999999",
-      },
-      theme: {
-        color: "#F97316",
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-
-    rzp.on("payment.failed", function (response) {
-      console.error("Payment failed:", response.error);
-      alert("Payment failed (expected with fake key).");
-      setLoading(false);
-    });
-
-    rzp.open();
-    setLoading(false);
-  };
-
-  const goToProducts = () => {
-    history.push("/products");
-  };
+  }, [dispatch, error, alert]);
 
   return (
-    <div className="payment-container">
-      <div className="payment-card">
-        <h2 className="payment-title">Secure Checkout</h2>
-
-        <div className="payment-summary">
-          <div className="summary-row">
-            <span>Item</span>
-            <span>Demo Product</span>
+    <Fragment>
+      {loading?<Loader/>:
+    <Fragment>
+      <MetaData title="Payment" />
+      <CheckoutSteps activeStep={2} />
+      <div className="paymentContainer">
+        <form className="paymentForm" onSubmit={(e) => submitHandler(e)}>
+          <Typography>Card Info</Typography>
+          <div>
+            <CreditCardIcon />
+            <CardNumberElement className="paymentInput" />
           </div>
-          <div className="summary-row">
-            <span>Quantity</span>
-            <span>1</span>
+          <div>
+            <EventIcon />
+            <CardExpiryElement className="paymentInput" />
           </div>
-          <div className="summary-row total">
-            <span>Total</span>
-            <span>₹{(amount / 100).toFixed(2)}</span>
+          <div>
+            <VpnKeyIcon />
+            <CardCvcElement className="paymentInput" />
           </div>
-        </div>
 
-        <div className="payment-actions">
-          <button
-            className="btn-primary"
-            onClick={handlePayment}
-            disabled={loading}
-          >
-            {loading ? "Processing..." : "Pay with Razorpay"}
-          </button>
+       
 
-          <button className="btn-secondary" onClick={goToProducts}>
-            Continue Shopping
-          </button>
-        </div>
-
-        <p className="note">
-          This uses a <strong>fake test key</strong>. The Razorpay popup will
-          appear, but payment will not succeed.
-        </p>
+          <input
+            type="submit"
+            value={`Pay - ₹${orderInfo && orderInfo.totalPrice}`}
+            ref={payBtn}
+            className="paymentFormBtn"
+          />
+        </form>
       </div>
-    </div>
+    </Fragment>
+}
+    </Fragment>
   );
 };
 

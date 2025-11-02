@@ -64,7 +64,8 @@ const Home = () => {
     window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
   }}
                         >
-                            Scroll <CgMouse/>
+                            Scroll
+                             <CgMouse/>
                             {/* scroll */}
                         </button>
                     </a>

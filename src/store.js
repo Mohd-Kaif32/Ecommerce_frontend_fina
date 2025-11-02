@@ -5,14 +5,15 @@ import { newProductReducer, newReviewReducer, productDetailsReducer, productRedu
 import { allUsersReducer, profileReducer, userDetailsReducer, userReducer } from "./reducers/userReducer";
 import {cartReducer} from "./reducers/cartReducer";
 import { allOrdersReducer, myOrdersReducer, newOrderReducer, orderDetailsReducer, orderReducer } from "./reducers/orderReducer";
-
-const reducer=combineReducers({
+import { forgotPasswordReducer } from "./reducers/userReducer";
+const reducer = combineReducers({
     products:productsReducer,
     productDetails:productDetailsReducer,
     user:userReducer,
     profile:profileReducer,
     cart:cartReducer,
     newOrder:newOrderReducer,
+    forgotPassword:forgotPasswordReducer,
     myOrders:myOrdersReducer,
     orderDetails:orderDetailsReducer,
     newReview:newReviewReducer,
@@ -23,6 +24,8 @@ const reducer=combineReducers({
     allUsers:allUsersReducer,
     userDetails:userDetailsReducer
 });
+
+// let userId = localStorage.getItem("userId");
 
 let initialState = {
   cart: {

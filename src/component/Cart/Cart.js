@@ -10,9 +10,11 @@ import { Link } from "react-router-dom";
 const Cart = ({ history }) => {
   const dispatch = useDispatch();
   const { cartItems } = useSelector((state) => state.cart);
+  console.log("cartItemss",cartItems)
 
   const increaseQuantity = (id, quantity, stock) => {
     const newQty = quantity + 1;
+    console.log(" inside cart quantity",stock,quantity);
     if (stock <= quantity) {
       return;
     }

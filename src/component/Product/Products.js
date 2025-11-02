@@ -23,6 +23,7 @@ const categories=[
 const Products = ({match}) => {
     
     console.log("hiiii");
+    console.log(match);
 
     const dispatch=useDispatch();
 
@@ -64,7 +65,7 @@ const Products = ({match}) => {
         </div>
 
         <div className='filterBox'>
-            <Typography>Price</Typography>
+            {/* <Typography>Price</Typography>
             <Slider 
             value={price}
             onChange={priceHandler}
@@ -72,7 +73,7 @@ const Products = ({match}) => {
             arial-labelledby="range-slider"
             min={0}
             max={25000}
-            />
+            /> */}
 
             <Typography>Categories</Typography>
             <ul className='categoryBox'>
@@ -88,7 +89,7 @@ const Products = ({match}) => {
 
             </ul>
 
-            <fieldset>
+            {/* <fieldset>
                 <Typography component="legend">Ratings Above</Typography>
                 <Slider
                 value={ratings}
@@ -100,7 +101,7 @@ const Products = ({match}) => {
                 min={0}
                 max={5}
                 />
-            </fieldset>
+            </fieldset> */}
             
         </div>
 

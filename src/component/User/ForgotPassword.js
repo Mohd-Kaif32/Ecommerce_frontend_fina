@@ -11,12 +11,12 @@ const ForgotPassword = () => {
   const dispatch = useDispatch();
   const alert = useAlert();
 
-  console.log("hiiff");
+  console.log("hii");
 
   const { error, message, loading } = useSelector(
     (state) => state.forgotPassword
   );
-
+  
   const [email, setEmail] = useState("");
 
   const forgotPasswordSubmit = (e) => {

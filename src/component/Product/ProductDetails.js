@@ -1,5 +1,3 @@
-
-
 import React, { Fragment, useEffect, useState } from "react";
 import Carousel from "react-material-ui-carousel";
 import "./ProductDetails.css";
@@ -14,6 +12,8 @@ import Loader from "../layout/Loader/Loader";
 import { useAlert } from "react-alert";
 import MetaData from "../layout/MetaData";
 import { addItemsToCart } from "../../actions/cartAction";
+import { Link } from "react-router-dom";
+import logo from "../../images/logo.png";
 import {
   Dialog,
   DialogActions,
@@ -23,9 +23,10 @@ import {
 } from "@material-ui/core";
 import { Rating } from "@material-ui/lab";
 import { NEW_REVIEW_RESET } from "../../constants/productConstants";
+import { Redirect } from "react-router-dom";
 // import { useAlert } from 'react-alert';
 
-const ProductDetails = ({ match }) => {
+const ProductDetails = ({ match,history }) => {
   const dispatch = useDispatch();
   const alert = useAlert();
 
@@ -33,6 +34,11 @@ const ProductDetails = ({ match }) => {
   const { product, loading, error } = useSelector(
     (state) => state.productDetails
   );
+  const {isAuthenticated} = useSelector((state)=>state.user);
+
+  console.log("productDetialsConsole", product);
+
+
 
   const { success, error: reviewError } = useSelector(
     (state) => state.newReview
@@ -52,11 +58,10 @@ const ProductDetails = ({ match }) => {
 
   const increaseQuantity = () => {
     console.log(product);
-    if (product.stock <= quantity)
-      {
-        alert.error(`Product stock is ${quantity} only `);
-        return;
-        }
+    if (product.stock <= quantity) {
+      alert.error(`Product stock is ${product.stock} only `);
+      return;
+    }
 
     const qty = quantity + 1;
     setQuantity(qty);
@@ -70,6 +75,10 @@ const ProductDetails = ({ match }) => {
   };
 
   const addToCartHandler = () => {
+    if(!isAuthenticated){
+      // return <Redirect to = "/login"/>;
+      return history.push("/login");
+    }
     dispatch(addItemsToCart(match.params.id, quantity));
     alert.success("Item Added To Cart");
   };
@@ -79,6 +88,9 @@ const ProductDetails = ({ match }) => {
   };
 
   const reviewSubmitHandler = () => {
+    if(!isAuthenticated){
+      return history.push("/login");
+    }
     const myForm = new FormData();
 
     myForm.set("rating", rating);
@@ -114,6 +126,9 @@ const ProductDetails = ({ match }) => {
         <Loader />
       ) : (
         <Fragment>
+          <Link  to="/" className="productDetailsHome">
+            <img src={logo} alt="Ecommerce" />
+          </Link>
           <MetaData title={`${product.name} -- ECOMMERCE`} />
           <div className="ProductDetails">
             <div>
@@ -151,7 +166,7 @@ const ProductDetails = ({ match }) => {
                     <button onClick={increaseQuantity}>+</button>
                   </div>
                   <button
-                    disabled={product.Stock < 1 ? true : false}
+                    disabled={product.stock < 1 ? true : false}
                     onClick={addToCartHandler}
                   >
                     Add to Cart
@@ -160,8 +175,8 @@ const ProductDetails = ({ match }) => {
 
                 <p>
                   Status:
-                  <b className={product.Stock < 1 ? "redColor" : "greenColor"}>
-                    {product.Stock < 1 ? "OutOfStock" : "InStock"}
+                  <b className={product.stock < 1 ? "redColor" : "greenColor"}>
+                    {product.stock < 1 ? "OutOfStock" : "InStock"}
                   </b>
                 </p>
               </div>

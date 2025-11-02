@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
+import { useEffect,useState } from 'react';
 import Header from "./component/layout/Header/Header.js"
 import Footer from "./component/layout/Footer/Footer.js"
 import React from "react";
@@ -37,25 +38,41 @@ import ProcessOrder from './component/Admin/ProcessOrder.js';
 import UsersList from './component/Admin/UsersList.js';
 import UpdateUser from './component/Admin/UpdateUser.js';
 import ProductReviews from './component/Admin/ProductReviews.js';
+import axios from "axios";
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from "@stripe/react-stripe-js";
+import OrderSuccess from "./component/Cart/OrderSuccess.js"
 
 
 function App() {
 
     const {isAuthenticated,user} = useSelector(state=>state.user);
 
+    const [stripeApiKey,setStripeApiKey] = useState("");
 
-  React.useEffect(()=>{
+    async function getStripeApiKey() {
+
+      const {data} = await axios.get("/api/v1/stripeApiKey");
+      setStripeApiKey(data.stripeApiKey);
+      
+    }
+
+    
+
+  useEffect(()=>{
     WebFont.load({
       google:{
         families:["Roboto","Drold","Chilanka"],
       }
     });
     store.dispatch(loadUser());
+    getStripeApiKey()
   },[])
   return <Router>
   <Header/>
 
   {isAuthenticated && <UserOptions user={user}/>}
+  
   <Route exact path="/" component={Home}/>
   <Route exact path="/product/:id" component={ProductDetails}/>
   <Route exact path="/products" component={Products}/>
@@ -83,15 +100,26 @@ function App() {
   <ProtectedRoute exact path="/shipping" component={Shipping}/>
 
   <ProtectedRoute exact path="/order/confirm" component={ConfirmOrder}/>
+
+
+  {stripeApiKey&&(<Elements stripe={loadStripe(stripeApiKey)}>
+  <ProtectedRoute exact path="/process/payment" component={Payment}/>
+  </Elements>)}
+
+
+  <ProtectedRoute exact path="/success" component={OrderSuccess}/>
+
+
+
   {/* <Route
           component={
             window.location.pathname === "/process/payment" ? null : NotFound
           }
         /> */}
-        <Route exact path="/process/payment" component={Payment}/>
+        {/* <Route exact path="/process/payment" component={Payment}/> */}
 
          <ProtectedRoute exact path="/orders" component={MyOrders}/>
-         <ProtectedRoute exact path="/orders/:id" component={OrderDetails}/>
+         <ProtectedRoute exact path="/order/:id" component={OrderDetails}/>
 
          <ProtectedRoute isAdmin={true} exact path="/admin/dashboard" component={Dashboard} />
 

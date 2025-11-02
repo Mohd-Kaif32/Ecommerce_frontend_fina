@@ -66,15 +66,43 @@ const MyOrders = () => {
   ];
   const rows = [];
 
+  
+  // orders &&
+  // orders.forEach((item) => {
+  //   rows.push({
+  //     id: item._id || "",                                 // fallback if _id missing
+  //     itemsQty: item.orderItems ? item.orderItems.length : 0, // safe check
+  //     status: item.orderStatus || "Processing",           // fallback if status missing
+  //     amount: item.totalPrice || 0,                       // fallback if totalPrice missing
+  //   });
+  // });
+console.log(orders);
+
+  // orders &&
+  // orders.forEach((item) => {
+  //   rows.push({
+  //     id: item._id || "",
+  //     itemsQty: item.orderItems
+  //       ? item.orderItems.reduce((acc, curr) => acc + (curr.quantity || 0), 0)
+  //       : 0,
+  //     status: item.orderStatus || "Processing",
+  //     amount: item.totalPrice || 0,
+  //   });
+  // });
+
   orders &&
-    orders.forEach((item, index) => {
-      rows.push({
-        itemsQty: item.orderItems.length,
-        id: item._id,
-        status: item.orderStatus,
-        amount: item.totalPrice,
-      });
+  orders.forEach((item) => {
+    rows.push({
+      id: item._id || "",
+      itemsQty: item.OrderItems
+        ? item.OrderItems.reduce((acc, curr) => acc + (curr.quantity || 0), 0)
+        : 0,
+      status: item.orderStatus || "Processing",
+      amount: item.totalPrice || 0,
     });
+  });
+
+
 
   useEffect(() => {
     if (error) {

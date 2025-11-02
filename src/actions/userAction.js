@@ -52,6 +52,8 @@ export const login = (email, password) => async (dispatch) => {
     );
 
     dispatch({ type: LOGIN_SUCCESS, payload: data.user });
+
+    // localStorage.setItem("userId",data.user._id);
   } catch (error) {
     dispatch({ type: LOGIN_FAIL, payload: error.response.data.message });
   }
@@ -94,6 +96,7 @@ export const logout = () => async (dispatch) => {
     await api.get(`/api/v1/logout`);
 
     dispatch({ type: LOGOUT_SUCCESS });
+    // localStorage.removeItem("userId");
   } catch (error) {
     dispatch({ type: LOGOUT_FAIL, payload: error.response.data.message });
   }

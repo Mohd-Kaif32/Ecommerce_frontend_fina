@@ -86,6 +86,19 @@
   font: 400 0.8vmax "Roboto";
   color: rgba(0, 0, 0, 0.74);
 }
+.productDetailsHome {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  z-index: 1000;
+}
+
+.productDetailsHome img {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+}
+
 
 .detailsBlock-3-1 > button:last-child {
   border: none;

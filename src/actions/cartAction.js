@@ -4,10 +4,14 @@ import {
   SAVE_SHIPPING_INFO,
 } from "../constants/cartConstants";
 import api from "../api";
-
+import { useAlert } from "react-alert";
 // Add to Cart
 export const addItemsToCart = (id, quantity) => async (dispatch, getState) => {
   const { data } = await api.get(`/api/v1/product/${id}`);
+
+  const { cartItems } = getState().cart;
+
+
 
   dispatch({
     type: ADD_TO_CART,
@@ -16,7 +20,7 @@ export const addItemsToCart = (id, quantity) => async (dispatch, getState) => {
       name: data.product.name,
       price: data.product.price,
       image: data.product.images[0].url,
-      stock: data.product.Stock,
+      stock: data.product.stock,
       quantity,
     },
   });
